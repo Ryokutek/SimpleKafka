@@ -21,10 +21,9 @@ public class KafkaConsumerFactory : IKafkaConsumerFactory
         _logger = _serviceProvider.GetService<ILogger<IKafkaConsumerFactory>>();
     } 
     
-    public void Subscribe<TEvent, THandler>(
-        ConsumerConfig? config = null,
-        string? topic = null, 
-        string? groupId = null, 
+    public async Task Subscribe<TEvent, THandler>(ConsumerConfig? config = null,
+        string? topic = null,
+        string? groupId = null,
         bool? enableAutoCommit = true)
     {
         string eventName = typeof(TEvent).Name;
@@ -40,7 +39,7 @@ public class KafkaConsumerFactory : IKafkaConsumerFactory
         List<EventHandlerTypes> eventHandlerModels = new List<EventHandlerTypes>();
         
         if (!_eventHandlerModels.ContainsKey(topic))
-            _consumers[topic] = BuildConsumer(topic, groupId, enableAutoCommit, config);
+            _consumers[topic] = await BuildConsumer(topic, groupId, enableAutoCommit, config);
         else
             eventHandlerModels = _eventHandlerModels[topic];
         
@@ -49,14 +48,14 @@ public class KafkaConsumerFactory : IKafkaConsumerFactory
         _eventHandlerModels[topic] = eventHandlerModels;
     }
 
-    private IKafkaConsumer BuildConsumer(
+    private async Task<IKafkaConsumer> BuildConsumer(
         string topic,
         string groupId, 
         bool? enableAutoCommit,
         ConsumerConfig? config)
     {
         IKafkaConsumer kafkaConsumer = new KafkaConsumer(config, _serviceProvider.GetService<ILogger<IKafkaConsumer>>());
-        kafkaConsumer.Consume(topic, groupId, enableAutoCommit ?? true);
+        await kafkaConsumer.Consume(topic, groupId, enableAutoCommit ?? true);
         kafkaConsumer.Received += async (sender, args) => await KafkaConsumerOnReceived(sender, args);
         return kafkaConsumer;
     }

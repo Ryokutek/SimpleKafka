@@ -23,14 +23,14 @@ public class KafkaConsumer : IKafkaConsumer
         _config = config ?? new ConsumerConfig();
     }
 
-    public void Consume(string topic, string groupId, bool enableAutoCommit)
+    public async Task Consume(string topic, string groupId, bool enableAutoCommit)
     {
         _config.GroupId = groupId;
         _config.EnableAutoCommit = enableAutoCommit;
         _consumer = new ConsumerBuilder<Ignore, string>(_config).Build();
-        _consumer.Subscribe(topic);
+        await SubscribeWithRetry(topic);
         
-        Task.Factory.StartNew(() =>
+        await Task.Factory.StartNew(() =>
         {
             while (!_cancellationToken.IsCancellationRequested)
             {
@@ -46,12 +46,25 @@ public class KafkaConsumer : IKafkaConsumer
                     
                     OnReceived(receivedEventArgs);
                 }
-                catch (Exception ex)
+                catch (Exception e)
                 {
-                    _logger?.LogError("Consume error {Error}, Topic {Topic}", ex.Message, topic);
+                    _logger?.LogError("Consume error {Error}. Topic {Topic}", e.Message, topic);
                 }
             }
         }, _cancellationToken);
+    }
+
+    private async Task SubscribeWithRetry(string topic)
+    {
+        try
+        {
+            _consumer?.Subscribe(topic);
+        }
+        catch (Exception e)
+        {
+            _logger?.LogError("Consumer error {Error}. Topic {Topic}", e.Message, topic);
+            await Task.Delay(5000, _cancellationToken);
+        }
     }
     
     protected virtual void OnReceived(ReceivedEventArgs e)
