@@ -13,7 +13,6 @@ public class KafkaConsumerFactory : IKafkaConsumerFactory
     private readonly IServiceProvider _serviceProvider;
 
     private readonly Dictionary<string, IKafkaConsumer> _consumers = new();
-    private readonly Dictionary<string, List<EventHandlerTypes>> _eventHandlerModels = new();
 
     public KafkaConsumerFactory(IServiceProvider serviceProvider)
     {
@@ -21,10 +20,11 @@ public class KafkaConsumerFactory : IKafkaConsumerFactory
         _logger = _serviceProvider.GetService<ILogger<IKafkaConsumerFactory>>();
     } 
     
-    public async Task Subscribe<TEvent, THandler>(ConsumerConfig? config = null,
+    public void Subscribe<TEvent, THandler>(
+        ConsumerConfig? config = null,
         string? topic = null,
         string? groupId = null,
-        bool? enableAutoCommit = true)
+        bool? enableAutoCommit = true) where THandler : IEventHandler<TEvent>
     {
         string eventName = typeof(TEvent).Name;
         if (string.IsNullOrEmpty(topic)) {
@@ -36,48 +36,35 @@ public class KafkaConsumerFactory : IKafkaConsumerFactory
             groupId = handlerName;
         }
 
-        List<EventHandlerTypes> eventHandlerModels = new List<EventHandlerTypes>();
-        
-        if (!_eventHandlerModels.ContainsKey(topic))
-            _consumers[topic] = await BuildConsumer(topic, groupId, enableAutoCommit, config);
-        else
-            eventHandlerModels = _eventHandlerModels[topic];
-        
-        eventHandlerModels.Add(new EventHandlerTypes(typeof(TEvent), typeof(THandler)));
-        
-        _eventHandlerModels[topic] = eventHandlerModels;
+        if (!_consumers.ContainsKey(topic))
+        {
+            _consumers[topic] = BuildConsumer(topic, groupId, enableAutoCommit, config);
+        }
+
+        _consumers[topic].Received += async (sender, args) => 
+            await KafkaConsumerOnReceived<TEvent, THandler>(sender, args);
     }
 
-    private async Task<IKafkaConsumer> BuildConsumer(
+    private IKafkaConsumer BuildConsumer(
         string topic,
         string groupId, 
         bool? enableAutoCommit,
         ConsumerConfig? config)
     {
         IKafkaConsumer kafkaConsumer = new KafkaConsumer(config, _serviceProvider.GetService<ILogger<IKafkaConsumer>>());
-        await kafkaConsumer.Consume(topic, groupId, enableAutoCommit ?? true);
-        kafkaConsumer.Received += async (sender, args) => await KafkaConsumerOnReceived(sender, args);
+        kafkaConsumer.Consume(topic, groupId, enableAutoCommit ?? true);
         return kafkaConsumer;
     }
 
-    private async Task KafkaConsumerOnReceived(object? _, ReceivedEventArgs e)
+    private async Task KafkaConsumerOnReceived<TEvent, THandler>(object? _, ReceivedEventArgs e) where THandler : IEventHandler<TEvent>
     {
-        string topic = e.Topic;
-        List<EventHandlerTypes> eventHandlerModels = _eventHandlerModels[topic];
-        
-        foreach (EventHandlerTypes eventHandlerModel in eventHandlerModels)
-        {
-            object? @event = JsonConvert.DeserializeObject(e.Message, eventHandlerModel.Event);
-            if (@event is not BaseEvent baseEvent) {
-                 continue;
-            }
-            
-            object eventHandler = ActivatorUtilities.CreateInstance(_serviceProvider, eventHandlerModel.Handler);
-            
-            if (eventHandler is IEventHandler<BaseEvent> handler) {
-                await handler.Handle(baseEvent);
-            }
+        TEvent? @event = JsonConvert.DeserializeObject<TEvent>(e.Message);
+        THandler eventHandler = ActivatorUtilities.CreateInstance<THandler>(_serviceProvider);
+
+        if (@event != null) {
+            await eventHandler.Handle(@event);
         }
+            
     }
     
     public void Dispose() 

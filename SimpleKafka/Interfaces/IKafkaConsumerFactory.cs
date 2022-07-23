@@ -4,8 +4,10 @@ namespace SimpleKafka.Interfaces;
 
 public interface IKafkaConsumerFactory : IDisposable
 {
-    Task Subscribe<TEvent, THandler>(ConsumerConfig? config = null,
+    void Subscribe<TEvent, THandler>(
+        ConsumerConfig? config = null,
         string? topic = null,
         string? groupId = null,
-        bool? enableAutoCommit = true);
+        bool? enableAutoCommit = true)
+        where THandler : IEventHandler<TEvent>;
 }
