@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using Confluent.Kafka;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using SimpleKafka.Interfaces;
@@ -21,7 +22,7 @@ public class KafkaConsumerFactory : IKafkaConsumerFactory
     } 
     
     public void Subscribe<TEvent, THandler>(
-        Dictionary<string, string>? config = null,
+        ConsumerConfig? config = null,
         string? topic = null, 
         string? groupId = null, 
         bool? enableAutoCommit = true)
@@ -52,7 +53,7 @@ public class KafkaConsumerFactory : IKafkaConsumerFactory
         string topic,
         string groupId, 
         bool? enableAutoCommit,
-        Dictionary<string, string>? config)
+        ConsumerConfig? config)
     {
         IKafkaConsumer kafkaConsumer = new KafkaConsumer(config, _serviceProvider.GetService<ILogger<IKafkaConsumer>>());
         kafkaConsumer.Consume(topic, groupId, enableAutoCommit ?? true);

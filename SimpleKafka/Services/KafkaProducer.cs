@@ -10,7 +10,7 @@ public class KafkaProducer<TKey> : IKafkaProducer<TKey>
     private readonly ILogger<IKafkaProducer<TKey>>? _logger;
     private readonly IProducer<TKey?, string> _producer;
     
-    public KafkaProducer(ILogger<IKafkaProducer<TKey>>? logger, Dictionary<string, string> config)
+    public KafkaProducer(ILogger<IKafkaProducer<TKey>>? logger, ProducerConfig config)
     {
         _logger = logger;
         _producer = new ProducerBuilder<TKey?, string>(config).Build();

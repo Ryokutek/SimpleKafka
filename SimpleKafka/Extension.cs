@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using Confluent.Kafka;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using SimpleKafka.Interfaces;
 using SimpleKafka.Services;
@@ -7,7 +8,7 @@ namespace SimpleKafka;
 
 public static class Extension
 {
-    public static void AddKafkaProducer<TKey>(this IServiceCollection serviceCollection, Dictionary<string, string> config)
+    public static void AddKafkaProducer<TKey>(this IServiceCollection serviceCollection, ProducerConfig config)
     {
         serviceCollection.AddSingleton<IKafkaProducer<TKey>>(provider =>
         {

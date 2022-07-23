@@ -4,6 +4,15 @@
         <TargetFramework>net6.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
+        <Version>0.1.1</Version>
+        <Authors>gsMelford</Authors>
+        <Company>GusMelford</Company>
+        <GeneratePackageOnBuild>False</GeneratePackageOnBuild>
+        <PackageId>SimpleKafka</PackageId>
+        <Title>SimpleKafka</Title>
+        <RepositoryUrl>https://github.com/GSMelford/SimpleKafka</RepositoryUrl>
+        <RootNamespace>SimpleKafka</RootNamespace>
+        <Product>SimpleKafka</Product>
     </PropertyGroup>
 
     <ItemGroup>

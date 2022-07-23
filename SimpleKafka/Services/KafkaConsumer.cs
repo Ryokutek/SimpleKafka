@@ -10,23 +10,23 @@ public class KafkaConsumer : IKafkaConsumer
     private readonly ILogger<IKafkaConsumer>? _logger;
     private readonly CancellationTokenSource _cancellationTokenSource;
     private readonly CancellationToken _cancellationToken;
-    private readonly Dictionary<string, string> _config;
+    private readonly ConsumerConfig _config;
     private IConsumer<Ignore, string>? _consumer;
     
     public event EventHandler<ReceivedEventArgs>? Received;
 
-    public KafkaConsumer(Dictionary<string, string>? config, ILogger<IKafkaConsumer>? logger = null)
+    public KafkaConsumer(ConsumerConfig? config, ILogger<IKafkaConsumer>? logger = null)
     {
         _logger = logger;
         _cancellationTokenSource = new CancellationTokenSource();
         _cancellationToken = _cancellationTokenSource.Token;
-        _config = config ?? new Dictionary<string, string>();
+        _config = config ?? new ConsumerConfig();
     }
 
     public void Consume(string topic, string groupId, bool enableAutoCommit)
     {
-        _config.Add("group.id", groupId);
-        _config.Add("enable.auto.commit", enableAutoCommit.ToString());
+        _config.GroupId = groupId;
+        _config.EnableAutoCommit = enableAutoCommit;
         _consumer = new ConsumerBuilder<Ignore, string>(_config).Build();
         _consumer.Subscribe(topic);
         
