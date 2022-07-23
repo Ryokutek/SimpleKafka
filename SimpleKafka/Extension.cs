@@ -16,7 +16,7 @@ public static class Extension
         });
     }
     
-    public static void AddKafkaConsumersFactory<TKey>(this IServiceCollection serviceCollection)
+    public static void AddKafkaConsumersFactory(this IServiceCollection serviceCollection)
     {
         serviceCollection.AddSingleton<IKafkaConsumerFactory, KafkaConsumerFactory>();
     }

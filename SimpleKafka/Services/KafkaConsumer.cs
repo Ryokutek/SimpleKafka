@@ -1,4 +1,5 @@
 ﻿using Confluent.Kafka;
+using Microsoft.Extensions.Logging;
 using SimpleKafka.Interfaces;
 using SimpleKafka.Models;
 
@@ -6,15 +7,17 @@ namespace SimpleKafka.Services;
 
 public class KafkaConsumer : IKafkaConsumer
 {
+    private readonly ILogger<IKafkaConsumer>? _logger;
     private readonly CancellationTokenSource _cancellationTokenSource;
     private readonly CancellationToken _cancellationToken;
     private readonly Dictionary<string, string> _config;
-    private IConsumer<Ignore, string> _consumer = null!;
+    private IConsumer<Ignore, string>? _consumer;
     
-    public event EventHandler<ReceivedEventArgs> Received = null!;
+    public event EventHandler<ReceivedEventArgs>? Received;
 
-    public KafkaConsumer(Dictionary<string, string>? config)
+    public KafkaConsumer(Dictionary<string, string>? config, ILogger<IKafkaConsumer>? logger = null)
     {
+        _logger = logger;
         _cancellationTokenSource = new CancellationTokenSource();
         _cancellationToken = _cancellationTokenSource.Token;
         _config = config ?? new Dictionary<string, string>();
@@ -38,14 +41,14 @@ public class KafkaConsumer : IKafkaConsumer
                     if (consumeResult is null) 
                         continue;
                     
-                    var deliverEventArgs = new ReceivedEventArgs(
+                    var receivedEventArgs = new ReceivedEventArgs(
                         consumeResult.Topic, consumeResult.Message.Value, consumeResult);
                     
-                    OnReceived(deliverEventArgs);
+                    OnReceived(receivedEventArgs);
                 }
                 catch (Exception ex)
                 {
-                    //TODO
+                    _logger?.LogError("Consume error {Error}, Topic {Topic}", ex.Message, topic);
                 }
             }
         }, _cancellationToken);
@@ -53,13 +56,13 @@ public class KafkaConsumer : IKafkaConsumer
     
     protected virtual void OnReceived(ReceivedEventArgs e)
     {
-        Received.Invoke(this, e);
+        Received?.Invoke(this, e);
     }
 
     public void Dispose()
     {
         _cancellationTokenSource.Dispose();
-        _consumer.Dispose();
+        _consumer?.Dispose();
         GC.SuppressFinalize(this);
     }
 }

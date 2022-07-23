@@ -16,7 +16,7 @@ public class KafkaProducer<TKey> : IKafkaProducer<TKey>
         _producer = new ProducerBuilder<TKey?, string>(config).Build();
     }
 
-    public async Task<DeliveryResult<TKey?, string>> PublishAsync<TEvent>(TEvent eventData, string? topic = null, TKey? key = default)
+    public async Task<DeliveryResult<TKey?, string>> ProduceAsync<TEvent>(TEvent eventData, string? topic = null, TKey? key = default)
     {
         if (string.IsNullOrEmpty(topic)) {
             topic = typeof(TEvent).Name;
