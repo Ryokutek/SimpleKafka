@@ -9,11 +9,11 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v3
     - name: Build
-      run: dotnet build -c Release
+      run: /home/maksym/dotnet/dotnet build -c Release
     - name: Pack
-      run: dotnet pack
+      run: /home/maksym/dotnet/dotnet pack
     - name: Publish
-      run: dotnet nuget push .\nupkgs\*.nupkg --api-key ${{ secrets.NUGET_TOKEN }} --source https://packages.gusmelford.com/v3/index.json --skip-duplicate
+      run: /home/maksym/dotnet/dotnet nuget push .\nupkgs\*.nupkg --api-key ${{ secrets.NUGET_TOKEN }} --source https://packages.gusmelford.com/v3/index.json --skip-duplicate
   notify:
     needs: [nuget]
     runs-on: simple-kafka-raspberrypi
