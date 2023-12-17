@@ -14,6 +14,8 @@
         <RootNamespace>SimpleKafka</RootNamespace>
         <Product>SimpleKafka</Product>
         <LangVersion>12</LangVersion>
+        <IsPackable>true</IsPackable>
+        <OutputPath>../nupkgs</OutputPath>
     </PropertyGroup>
 
     <ItemGroup>
