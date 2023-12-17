@@ -1,13 +1,16 @@
-﻿using Confluent.Kafka;
+﻿using System;
+using System.Threading.Tasks;
+using Confluent.Kafka;
+using SimpleKafka.Modules;
 
 namespace SimpleKafka.Interfaces;
 
 public interface IKafkaConsumerFactory : IDisposable
 {
-    void Subscribe<TEvent, THandler>(
-        ConsumerConfig? config = null,
-        string? topic = null,
+    Task SubscribeAsync<TEvent, THandler>(ConsumerConfig? config = null,
+        string? topicPrefix = null,
         string? groupId = null,
         bool? enableAutoCommit = true)
-        where THandler : IEventHandler<TEvent>;
+        where THandler : class, IKafkaHandler<TEvent>
+        where TEvent : BaseEvent;
 }

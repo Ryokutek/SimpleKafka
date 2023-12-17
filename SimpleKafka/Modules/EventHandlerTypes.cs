@@ -1,4 +1,6 @@
-﻿namespace SimpleKafka.Models;
+﻿using System;
+
+namespace SimpleKafka.Modules;
 
 public class EventHandlerTypes
 {

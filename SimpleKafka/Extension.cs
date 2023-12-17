@@ -1,6 +1,5 @@
 ﻿using Confluent.Kafka;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 using SimpleKafka.Interfaces;
 using SimpleKafka.Services;
 
@@ -10,15 +9,12 @@ public static class Extension
 {
     public static void AddKafkaProducer<TKey>(this IServiceCollection serviceCollection, ProducerConfig config)
     {
-        serviceCollection.AddSingleton<IKafkaProducer<TKey>>(provider =>
-        {
-            ILogger<IKafkaProducer<TKey>>? logger = provider.GetService<ILogger<IKafkaProducer<TKey>>>();
-            return new KafkaProducer<TKey>(logger, config);
-        });
+        serviceCollection.AddSingleton<IKafkaProducer<TKey>>(_ => new KafkaProducerService<TKey>(config));
     }
     
     public static void AddKafkaConsumersFactory(this IServiceCollection serviceCollection)
     {
+        serviceCollection.AddSingleton<IKafkaTopicFactory, KafkaTopicFactory>();
         serviceCollection.AddSingleton<IKafkaConsumerFactory, KafkaConsumerFactory>();
     }
 }

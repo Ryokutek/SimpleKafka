@@ -1,21 +1,25 @@
-﻿using Confluent.Kafka;
+﻿using System;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+using Confluent.Kafka;
 using Microsoft.Extensions.Logging;
 using SimpleKafka.Interfaces;
-using SimpleKafka.Models;
+using SimpleKafka.Modules;
 
 namespace SimpleKafka.Services;
 
-public class KafkaConsumer : IKafkaConsumer
+public class KafkaConsumerService : IKafkaConsumerService
 {
-    private readonly ILogger<IKafkaConsumer>? _logger;
+    private readonly ILogger<IKafkaConsumerService>? _logger;
     private readonly CancellationTokenSource _cancellationTokenSource;
     private readonly CancellationToken _cancellationToken;
     private readonly ConsumerConfig _config;
     private IConsumer<Ignore, string>? _consumer;
     
-    public event EventHandler<ReceivedEventArgs>? Received;
+    public event EventHandler<ReceivedEventDetails>? Received;
 
-    public KafkaConsumer(ConsumerConfig? config, ILogger<IKafkaConsumer>? logger = null)
+    public KafkaConsumerService(ConsumerConfig? config, ILogger<IKafkaConsumerService>? logger = null)
     {
         _logger = logger;
         _cancellationTokenSource = new CancellationTokenSource();
@@ -38,11 +42,13 @@ public class KafkaConsumer : IKafkaConsumer
                 {
                     ConsumeResult<Ignore, string> consumeResult = _consumer.Consume(300);
                     
-                    if (consumeResult is null) 
+                    if (consumeResult is null)
                         continue;
                     
-                    var receivedEventArgs = new ReceivedEventArgs(
-                        consumeResult.Topic, consumeResult.Message.Value, consumeResult);
+                    var receivedEventArgs = new ReceivedEventDetails(
+                        consumeResult.Topic.Split(".").First(),
+                        consumeResult.Topic.Split(".").Last(),
+                        consumeResult.Message.Value, consumeResult);
                     
                     OnReceived(receivedEventArgs);
                 }
@@ -52,9 +58,23 @@ public class KafkaConsumer : IKafkaConsumer
                 }
             }
         }, _cancellationToken);
+        
+        WaitPartitions();
+    }
+
+    private void WaitPartitions()
+    {
+        for (var i = 0; i < 60; i++)
+        {
+            if (_consumer!.Assignment.Count != 0) {
+                break;
+            }
+            
+            Thread.Sleep(500);
+        }
     }
     
-    protected virtual void OnReceived(ReceivedEventArgs e)
+    protected virtual void OnReceived(ReceivedEventDetails e)
     {
         Received?.Invoke(this, e);
     }

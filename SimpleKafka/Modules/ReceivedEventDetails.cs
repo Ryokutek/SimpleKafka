@@ -1,15 +1,17 @@
 ﻿using Confluent.Kafka;
 
-namespace SimpleKafka.Models;
+namespace SimpleKafka.Modules;
 
-public class ReceivedEventArgs
+public class ReceivedEventDetails
 { 
+    public string TenantKey { get; }
     public string Topic { get; }
     public string Message { get; }
     public ConsumeResult<Ignore, string> ConsumeResult { get; }
     
-    public ReceivedEventArgs(string topic, string message, ConsumeResult<Ignore, string> consumeResult)
+    public ReceivedEventDetails(string tenantKey, string topic, string message, ConsumeResult<Ignore, string> consumeResult)
     {
+        TenantKey = tenantKey;
         Topic = topic;
         Message = message;
         ConsumeResult = consumeResult;
