@@ -75,8 +75,8 @@ public class KafkaConsumerFactory : IKafkaConsumerFactory
             
         if (@event != null)
         {
-            _logger?.LogInformation("{CommandHandler} started processing. SessionId: {SessionId}",
-                typeof(THandler).Name, @event.SessionId);
+            _logger?.LogInformation("{CommandHandler} started processing. Id: {SessionId}",
+                typeof(THandler).Name, @event.Id);
 
             try
             {
@@ -87,12 +87,12 @@ public class KafkaConsumerFactory : IKafkaConsumerFactory
             }
             catch (Exception exception)
             {
-                _logger?.LogError(exception,"{CommandHandler} caught an exception. SessionId: {SessionId}",
-                    typeof(THandler).Name, @event.SessionId);
+                _logger?.LogError(exception,"{CommandHandler} caught an exception. Id: {SessionId}",
+                    typeof(THandler).Name, @event.Id);
             }
                 
-            _logger?.LogInformation("{CommandHandler} has been processed. SessionId: {SessionId}",
-                typeof(THandler).Name, @event.SessionId);
+            _logger?.LogInformation("{CommandHandler} has been processed. Id: {SessionId}",
+                typeof(THandler).Name, @event.Id);
         }
     }
     

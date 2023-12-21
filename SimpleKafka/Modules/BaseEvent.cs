@@ -1,8 +1,6 @@
-﻿using System;
-
-namespace SimpleKafka.Modules;
+﻿namespace SimpleKafka.Modules;
 
 public abstract class BaseEvent
 {
-    public Guid SessionId { get; set; }
+    public Guid Id { get; set; }
 }
