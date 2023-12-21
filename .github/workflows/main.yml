@@ -12,10 +12,11 @@ jobs:
       run: /lib/dotnet/dotnet build -c Release
     - name: Pack Setup
       run: /lib/dotnet/dotnet nuget add source https://packages.gusmelford.com/v3/index.json -n GusMelford -u ${{ secrets.NUGET_USERNAME }} -p ${{ secrets.NUGET_PASSWORD }} --store-password-in-clear-text
+      continue-on-error: true
     - name: Pack
       run: /lib/dotnet/dotnet pack
     - name: Publish
-      run: /lib/dotnet/dotnet nuget push .\nupkgs\*.nupkg --api-key ${{ secrets.NUGET_TOKEN }} --source https://packages.gusmelford.com/v3/index.json --skip-duplicate
+      run: /lib/dotnet/dotnet nuget push ./nupkgs/*.nupkg --api-key ${{ secrets.NUGET_TOKEN }} --source https://packages.gusmelford.com/v3/index.json --skip-duplicate
   notify:
     needs: [nuget]
     runs-on: simple-kafka-raspberrypi
