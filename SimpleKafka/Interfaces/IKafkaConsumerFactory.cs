@@ -7,7 +7,8 @@ namespace SimpleKafka.Interfaces;
 
 public interface IKafkaConsumerFactory : IDisposable
 {
-    Task SubscribeAsync<TEvent, THandler>(ConsumerConfig? config = null,
+    Task SubscribeAsync<TEvent, THandler>(
+        ConsumerConfig? config = null,
         string? topicPrefix = null,
         string? groupId = null,
         bool? enableAutoCommit = true)
