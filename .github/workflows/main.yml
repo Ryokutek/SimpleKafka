@@ -4,19 +4,19 @@ on:
     branches: [master]
 jobs:
   nuget:
-    runs-on: simple-kafka-raspberrypi
+    runs-on: self-hosted
     steps:
     - name: Checkout
       uses: actions/checkout@v3
     - name: Build
-      run: /lib/dotnet/dotnet build -c Release
+      run: dotnet build -c Release
     - name: Pack Setup
-      run: /lib/dotnet/dotnet nuget add source https://packages.gusmelford.com/v3/index.json -n GusMelford -u ${{ secrets.NUGET_USERNAME }} -p ${{ secrets.NUGET_PASSWORD }} --store-password-in-clear-text
+      run: dotnet nuget add source http://localhost:4545/v3/index.json -n GusMelford -u ${{ secrets.NUGET_USERNAME }} -p ${{ secrets.NUGET_PASSWORD }} --store-password-in-clear-text
       continue-on-error: true
     - name: Pack
       run: /lib/dotnet/dotnet pack
     - name: Publish
-      run: /lib/dotnet/dotnet nuget push ./nupkgs/*.nupkg --api-key ${{ secrets.NUGET_TOKEN }} --source https://packages.gusmelford.com/v3/index.json --skip-duplicate
+      run: dotnet nuget push ./nupkgs/*.nupkg --api-key ${{ secrets.NUGET_TOKEN }} --source http://localhost:4545/v3/index.json --skip-duplicate
   notify:
     needs: [nuget]
     runs-on: simple-kafka-raspberrypi
